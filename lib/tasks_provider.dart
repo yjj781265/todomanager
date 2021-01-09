@@ -1,8 +1,16 @@
 import 'package:flutter/cupertino.dart';
+import 'package:hive/hive.dart';
 import 'package:todo_mgr/task.dart';
 
 class TaskProvider extends ChangeNotifier {
-  List<Task> tasks = List();
+  static const String _kListKey = "tasks";
+  List tasks = List();
+  var box = Hive.box('taskBox');
+
+  TaskProvider() {
+    tasks = box.get(_kListKey);
+    tasks = tasks == null ? List<Task>() : tasks.cast<Task>();
+  }
 
   add(Task task) {
     tasks.add(task);
@@ -22,5 +30,11 @@ class TaskProvider extends ChangeNotifier {
   removeTask(Task task) {
     tasks.remove(task);
     notifyListeners();
+  }
+
+  @override
+  void notifyListeners() {
+    box.put(_kListKey, tasks);
+    super.notifyListeners();
   }
 }
